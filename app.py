@@ -16,6 +16,7 @@ client = pymongo.MongoClient(CONNECTION_STRING,ssl_cert_reqs=ssl.CERT_NONE)
 db = client.get_database('flask_mongodb_atlas')
 user_collection = pymongo.collection.Collection(db, 'user_collection')
 todo_collection = pymongo.collection.Collection(db, 'todo_collection')
+reporte_collection = pymongo.collection.Collection(db, 'reporte_collection')
 
 
 @app.route("/")
@@ -56,3 +57,23 @@ def list_todo():
 def update_todo(id):
     todo=todo_collection.update_one({"_id":id},{"$set":{"done":True}})
     return f"Task {id} completed"
+
+@app.route("/nuevo",methods=['POST'])
+def nuevo():
+    data= request.json
+    reporte_collection.insert_one({"matricula":data["matricula"],"nombre":data["nombre"],"edad":data["edad"],"nivel":data["nivel"],"regresa":data["regresa"]})
+    return "User created"
+
+@app.route("/si",methods=['GET'])
+def si():
+    todos = reporte_collection.find({"regresa":True})
+    response=[todo for todo in todos]
+
+    return json.dumps(response, default=json_util.default)
+
+@app.route("/no",methods=['GET'])
+def no():
+    todos = reporte_collection.find({"regresa":False})
+    response=[todo for todo in todos]
+
+    return json.dumps(response, default=json_util.default)
